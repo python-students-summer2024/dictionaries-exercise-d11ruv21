@@ -4,6 +4,7 @@ See README.md for instructions.
 Do not run this file directly.  Rather, run main.py instead.
 """
 
+import csv
 
 def bake_cookies(filepath):
     """
@@ -17,6 +18,19 @@ def bake_cookies(filepath):
     """
     # write your code for this function below here.
 
+    cookies = []
+    with open(filepath, newline='', encoding='utf-8') as csvfile:
+        cookie_reader = csv.DictReader(csvfile)
+        for row in cookie_reader:
+            cookie = {
+                'id': int(row['id']),
+                'title': row['title'],
+                'description': row['description'],
+                'price': float(row['price'].replace('$', ''))
+            }
+            cookies.append(cookie)
+    return cookies
+
 
 def welcome():
     """
@@ -27,6 +41,8 @@ def welcome():
 
     """
     # write your code for this function below this line
+    print("Welcome to the Python Cookie Shop!")
+    print("We feed each according to their need.")
 
 
 def display_cookies(cookies):
@@ -49,6 +65,12 @@ def display_cookies(cookies):
     """
     # write your code for this function below this line
 
+    print("Here are the cookies we have in the shop for you:\n")
+    for cookie in cookies:
+        print(f"#{cookie['id']} - {cookie['title']}")
+        print(cookie['description'])
+        print(f"Price: ${cookie['price']:.2f}\n")
+
 
 def get_cookie_from_dict(id, cookies):
     """
@@ -59,6 +81,11 @@ def get_cookie_from_dict(id, cookies):
     :returns: the matching cookie, as a dictionary
     """
     # write your code for this function below this line
+    for cookie in cookies:
+        if cookie['id'] == id:
+            return cookie
+    return None
+
 
 
 def solicit_quantity(id, cookies):
@@ -78,6 +105,19 @@ def solicit_quantity(id, cookies):
     """
     # write your code for this function below this line
 
+    cookie = get_cookie_from_dict(id, cookies)
+    while True:
+        try:
+            quantity = int(input(f"My favorite! How many {cookie['title']} would you like? "))
+            if quantity <= 0:
+                print("Please enter a positive number.")
+                continue
+            subtotal = quantity * cookie['price']
+            print(f"Your subtotal for {quantity} {cookie['title']} is ${subtotal:.2f}.")
+            return quantity
+        except ValueError:
+            print("Please enter a valid number.")
+
 
 def solicit_order(cookies):
     """
@@ -96,6 +136,21 @@ def solicit_order(cookies):
     :returns: A list of the ids and quantities of each cookies the user wants to order.
     """
     # write your code for this function below this line
+    order = []
+    while True:
+        user_input = input("Please enter the number of any cookie you would like to purchase (type 'finished' if finished with your order): ").strip().lower()
+        if user_input in ['finished', 'done', 'quit', 'exit']:
+            break
+        try:
+            cookie_id = int(user_input)
+            if get_cookie_from_dict(cookie_id, cookies):
+                quantity = solicit_quantity(cookie_id, cookies)
+                order.append({'id': cookie_id, 'quantity': quantity})
+            else:
+                print("Invalid cookie id. Please try again.")
+        except ValueError:
+            print("Please enter a valid number.")
+    return order
 
 
 def display_order_total(order, cookies):
@@ -118,6 +173,16 @@ def display_order_total(order, cookies):
 
     """
     # write your code for this function below this line
+
+    print("\nThank you for your order. You have ordered:\n")
+    total_cost = 0
+    for item in order:
+        cookie = get_cookie_from_dict(item['id'], cookies)
+        print(f"-{item['quantity']} {cookie['title']}")
+        total_cost += item['quantity'] * cookie['price']
+    print(f"\nYour total is ${total_cost:.2f}.")
+    print("Please pay with Bitcoin before picking-up.")
+    print("\nThank you!\n-The Python Cookie Shop Robot.")
 
 
 def run_shop(cookies):
